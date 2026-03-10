@@ -22,6 +22,17 @@ let currentPhotoIndex = 0;
 let currentUser = JSON.parse(localStorage.getItem('flowerUser')) || null;
 let selEmoji = currentUser ? currentUser.icon : '';
 
+// 画面上部の「あなたは 〇〇 さんです」表示を更新
+function updateUserStatus() {
+    const el = document.getElementById('user-status');
+    if (!el) return;
+    if (currentUser && currentUser.name) {
+        el.textContent = `あなたは ${currentUser.name} さんです`;
+    } else {
+        el.textContent = 'おなまえを設定してください';
+    }
+}
+
 // 3. 匿名ログインと合言葉（処理を整理しました）
 firebase.auth().signInAnonymously().then(() => {
     if (localStorage.getItem('pass-ok') !== 'true') {
@@ -221,6 +232,7 @@ function saveCustomUser() {
         currentUser = { name, icon: selEmoji };
         localStorage.setItem('flowerUser', JSON.stringify(currentUser));
         document.getElementById('sender-modal').style.display = 'none';
+        updateUserStatus();
         alert("設定完了！");
     } else alert("おなまえと絵文字をえらんでね！");
 }
@@ -309,3 +321,4 @@ function goNext() {
 
 // 初回実行
 renderCalendar();
+updateUserStatus();
