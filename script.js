@@ -150,7 +150,13 @@ function openPhotoModal(key) {
             currentPhotoList.push(item.src);
             const photoItem = document.createElement('div');
             photoItem.className = 'modal-photo-item';
-            photoItem.innerHTML = `<button class="delete-btn" onclick="event.stopPropagation(); deletePhoto('${key}', '${id}')">×</button><img src="${item.src}" class="modal-img" onclick="openZoomWithIndex(${index})"><br><small>${item.icon || '👤'} ${item.sender || 'ななし'}</small>`;
+            const canDelete = currentUser && item.sender && currentUser.name === item.sender;
+            photoItem.innerHTML = `
+                ${canDelete ? `<button class="delete-btn" onclick="event.stopPropagation(); deletePhoto('${key}', '${id}')">×</button>` : ''}
+                <img src="${item.src}" class="modal-img" onclick="openZoomWithIndex(${index})">
+                <br>
+                <small>${item.icon || '👤'} ${item.sender || 'ななし'}</small>
+            `;
             list.appendChild(photoItem);
         });
     }
@@ -158,7 +164,17 @@ function openPhotoModal(key) {
 }
 
 function deletePhoto(dateKey, photoId) {
-    if (confirm('消してもいいですか？')) database.ref(`photos/${dateKey}/${photoId}`).remove();
+    const item = photoData[dateKey] && photoData[dateKey][photoId];
+    if (!item) return;
+
+    if (!currentUser || !item.sender || currentUser.name !== item.sender) {
+        alert('自分が投稿した写真だけ消せます。');
+        return;
+    }
+
+    if (confirm('消してもいいですか？')) {
+        database.ref(`photos/${dateKey}/${photoId}`).remove();
+    }
 }
 
 function closeModal(id) { document.getElementById(id).style.display = 'none'; }
