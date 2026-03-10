@@ -1,0 +1,88 @@
+<!DOCTYPE html>
+<html lang="en">
+
+  <head>
+    <meta charset="UTF-8">
+    <title>ばあちゃんと写真日記 </title>
+    <link rel="stylesheet" href="style.css">
+
+  </head>
+    
+  <body>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+<script src="https://www.gstatic.com/firebasejs/10.8.0/firebase-app-compat.js"></script>
+<script src="https://www.gstatic.com/firebasejs/10.8.0/firebase-auth-compat.js"></script>
+<script src="https://www.gstatic.com/firebasejs/10.8.0/firebase-database-compat.js"></script>
+
+<div id="loading-overlay" class="loading-overlay">
+    <div class="spinner"></div>
+    <p id="loading-text">写真をおくっています...</p>
+</div>
+
+<div class="app-wrapper">
+    <h1 class="main-title">📸 ばあちゃんと写真日記 🌸</h1>
+
+    <div class="calendar-container">
+        <div class="calendar">
+            <div class="calendar-header">
+                <button class="nav-btn" onclick="changeMonth(-1)">◀</button>
+                <div id="calendar-title"></div>
+                <button class="nav-btn" onclick="changeMonth(1)">▶</button>
+            </div>
+            <div class="days-grid">
+                <div class="day-name sun">日</div><div class="day-name">月</div><div class="day-name">火</div>
+                <div class="day-name">水</div><div class="day-name">木</div><div class="day-name">金</div><div class="day-name sat">土</div>
+            </div>
+            <div id="calendar-dates" class="days-grid"></div>
+        </div>
+        <button class="today-btn" onclick="goToday()">今月に戻る</button>
+    </div>
+
+    <div class="upload-area">
+        <input type="file" id="photo-input" accept="image/*" multiple style="display: none;">
+        <div class="main-button" id="main-upload-trigger">
+            ✨ 写真をのせる ✨<br>
+            <small>（日付を選んでからここを押してね！）</small>
+        </div>
+        <button class="change-user-btn" id="sender-btn">👤 投稿者の設定を変える</button>
+    </div>
+</div>
+
+<div id="zoom-modal" class="zoom-overlay">
+    <img id="zoomed-img" src="" alt="拡大画像">
+
+    <div class="nav-container">
+        <button class="nav-arrow prev" onclick="goPrev()">◀ 前へ</button>
+        <button class="nav-arrow next" onclick="goNext()">次へ ▶</button>
+    </div>
+
+    <div class="swipe-hint">◀ 左右にスライド、またはボタンでめくれます ▶</div>
+    <div style="width: 100%; padding: 20px; box-sizing: border-box;">
+        <button class="standard-btn back-btn" onclick="closeModal('zoom-modal')">もどる</button>
+    </div>
+</div>
+
+<div id="sender-modal" class="modal">
+    <div class="modal-content">
+        <h3>だれが投稿しますか？</h3>
+        <div class="emoji-selection" id="emoji-list"></div>
+        <input type="text" id="user-name-input" placeholder="おなまえ" class="name-input">
+        <button class="standard-btn save-btn" onclick="saveCustomUser()">決定！</button>
+        <button class="standard-btn back-btn" onclick="closeModal('sender-modal')">もどる</button>
+    </div>
+</div>
+
+<div id="modal" class="modal">
+    <div class="modal-content">
+        <h2 id="modal-date-title"></h2>
+        <button class="standard-btn add-photo-btn" id="modal-add-btn">📸 写真を追加する</button>
+        <div id="modal-photo-list" class="photo-grid-view"></div>
+        <button class="standard-btn back-btn" onclick="closeModal('modal')">もどる</button>
+    </div>
+</div>
+
+    <script  src="./script.js"></script>
+
+  </body>
+  
+</html>
