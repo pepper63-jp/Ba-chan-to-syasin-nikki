@@ -155,12 +155,23 @@ function openPhotoModal(key) {
                 ${canDelete ? `<button class="delete-btn" onclick="event.stopPropagation(); deletePhoto('${key}', '${id}')">×</button>` : ''}
                 <img src="${item.src}" class="modal-img" onclick="openZoomWithIndex(${index})">
                 <br>
-                <small>${item.icon || '👤'} ${item.sender || 'ななし'}</small>
+                <small>${formatTime(item.timestamp)} ${item.icon || '👤'} ${item.sender || 'ななし'}</small>
             `;
             list.appendChild(photoItem);
         });
     }
     document.getElementById('modal').style.display = 'block';
+}
+
+// 投稿時間を「HH:MM」形式で表示するための関数
+function formatTime(timestamp) {
+    if (!timestamp) return '';
+    try {
+        const date = new Date(timestamp);
+        return date.toLocaleTimeString('ja-JP', { hour: '2-digit', minute: '2-digit' });
+    } catch (e) {
+        return '';
+    }
 }
 
 function deletePhoto(dateKey, photoId) {
