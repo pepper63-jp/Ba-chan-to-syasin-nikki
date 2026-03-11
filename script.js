@@ -22,12 +22,12 @@ let currentPhotoIndex = 0;
 let currentUser = JSON.parse(localStorage.getItem('flowerUser')) || null;
 let selEmoji = currentUser ? currentUser.icon : '';
 
-// 画面上部の「あなたは 〇〇 さんです」表示を更新
+// 画面上部の「あなたは【〇〇】さんです」表示を更新
 function updateUserStatus() {
     const el = document.getElementById('user-status');
     if (!el) return;
     if (currentUser && currentUser.name) {
-        el.textContent = `あなたは ${currentUser.name} さんです`;
+        el.textContent = `あなたは【${currentUser.name}】さんです`;
     } else {
         el.textContent = 'おなまえを設定してください';
     }
