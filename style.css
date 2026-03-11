@@ -44,7 +44,7 @@ body { font-family: sans-serif; background-color: #fdfcf0; margin: 0; display: f
 .today { 
     color: #d87093; 
     background: #fffafa; 
-    border: 3px solid #d87093; /* 濃いピンクの太線に変更 */
+    border: 1px solid #d87093; /* 濃いピンクの通常の線に変更 */
     border-radius: 12px;
     box-sizing: border-box;
 }
