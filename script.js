@@ -37,7 +37,7 @@ function updateUserStatus() {
 firebase.auth().signInAnonymously().then(() => {
     if (localStorage.getItem('pass-ok') !== 'true') {
         const pass = prompt("合言葉を入力してね（親族専用）");
-        if (pass === 'baachan') {
+        if (pass === 'abc') {
             localStorage.setItem('pass-ok', 'true');
         } else {
             alert("合言葉が違います。もう一度開いてね。");
