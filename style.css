@@ -13,6 +13,19 @@ body { font-family: sans-serif; background-color: #fdfcf0; margin: 0; display: f
 .calendar { background: white; border-radius: 15px; border: 3px solid #ffb7c5; overflow: hidden; box-shadow: 0 4px 10px rgba(0,0,0,0.1); }
 .calendar-header { background: #ffb7c5; color: white; display: flex; justify-content: space-between; align-items: center; padding: 10px; }
 .nav-btn { background: rgba(255,255,255,0.3); border: none; color: white; font-size: 1.2rem; padding: 5px 15px; border-radius: 8px; }
+.calendar-header #calendar-title {
+    font-size: 1.2rem;
+    font-weight: bold;
+    text-align: center;
+    flex: 1;
+    cursor: pointer;
+}
+
+.calendar-header #calendar-title .calendar-title-text {
+    display: inline-block;
+    padding-bottom: 2px;
+    border-bottom: 3px double #999; /* グレーの太めの二重下線（テキスト幅に合わせる） */
+}
 .days-grid { display: grid; grid-template-columns: repeat(7, 1fr); }
 .day-name { text-align: center; padding: 5px 0; font-size: 0.75rem; background: #fff5f7; color: #d87093; }
 .date-cell { min-height: 80px; border-right: 1px solid #ffe4e1; border-bottom: 1px solid #ffe4e1; position: relative; background: #fff; cursor: pointer; }

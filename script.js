@@ -59,7 +59,13 @@ database.ref('photos').on('value', (snap) => {
 // 5. カレンダー描画
 function renderCalendar() {
     const y = currentDisplayDate.getFullYear(), m = currentDisplayDate.getMonth();
-    document.getElementById('calendar-title').innerText = `${y}年 ${m + 1}月`;
+    document.getElementById('calendar-title').innerHTML = `<span class="calendar-title-text">${y}年 ${m + 1}月</span>`;
+    const titleWrapper = document.querySelector('#calendar-title .calendar-title-text');
+    if (titleWrapper) {
+        titleWrapper.onclick = () => {
+            goToday();
+        };
+    }
     const first = new Date(y, m, 1).getDay(), last = new Date(y, m + 1, 0).getDate();
     const container = document.getElementById('calendar-dates');
     if (!container) return;
