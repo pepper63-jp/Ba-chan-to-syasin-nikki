@@ -26,13 +26,13 @@ body { font-family: sans-serif; background-color: #fdfcf0; margin: 0; display: f
     font-weight: bold;
     text-align: center;
     flex: 1;
-    cursor: pointer;
 }
 
 .calendar-header #calendar-title .calendar-title-text {
     display: inline-block;
     padding-bottom: 2px;
     border-bottom: 3px double #999; /* グレーの太めの二重下線（テキスト幅に合わせる） */
+    cursor: pointer; /* テキスト部分だけポインターにする */
 }
 .days-grid { display: grid; grid-template-columns: repeat(7, 1fr); }
 .day-name { text-align: center; padding: 5px 0; font-size: 0.75rem; background: #fff5f7; color: #d87093; }
