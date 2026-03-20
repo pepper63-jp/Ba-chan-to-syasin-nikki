@@ -77,45 +77,36 @@ body { font-family: sans-serif; background-color: #fdfcf0; margin: 0; display: f
 .save-btn { background: #d87093; color: white; margin-top: 20px; }
 
 .upload-area { text-align: center; margin-top: 16px; }
-.main-button { background: #d87093; color: white; padding: 15px; border-radius: 40px; font-weight: bold; width: 90%; display: inline-block; cursor: pointer; margin-bottom: 0; }
-.upload-area-actions {
-    display: flex;
-    flex-wrap: wrap;
-    align-items: center;
-    gap: 6px 8px;
-    margin-top: 6px;
-    width: 100%;
+.main-button { background: #d87093; color: white; padding: 15px; border-radius: 40px; font-weight: bold; width: 90%; display: inline-block; cursor: pointer; margin-bottom: 0; box-sizing: border-box; }
+.settings-main-btn {
+    margin-top: 12px;
     box-sizing: border-box;
-}
-.change-user-btn {
-    background: white;
-    border: 2px solid #d87093;
+    background: #fff;
     color: #d87093;
-    padding: 7px 10px;
-    border-radius: 16px;
-    margin: 0;
-    flex: 1 1 auto;
-    min-width: 0;
-    cursor: pointer;
-    font-weight: bold;
-    font-size: 0.78rem;
-    line-height: 1.25;
-    text-align: center;
+    border: 3px solid #d87093;
+    font-family: inherit;
+    font-size: 1.05rem;
+    line-height: 1.3;
+    box-shadow: 0 4px 0 rgba(216, 112, 147, 0.25);
 }
-.auth-logout-btn {
-    flex: 0 0 auto;
-    margin-left: auto;
-    background: white;
-    border: 2px solid #d87093;
-    color: #d87093;
-    padding: 7px 12px;
-    border-radius: 16px;
-    font-weight: bold;
-    font-size: 0.78rem;
-    cursor: pointer;
-    white-space: nowrap;
+.settings-main-btn:active {
+    transform: translateY(2px);
+    box-shadow: none;
 }
-.auth-logout-btn:active { opacity: 0.85; }
+.settings-main-btn-inner {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    gap: 10px;
+    vertical-align: middle;
+}
+.settings-gear-icon {
+    flex-shrink: 0;
+    display: block;
+}
+.settings-main-btn-label {
+    font-weight: bold;
+}
 
 .modal { display: none; position: fixed; z-index: 999; left: 0; top: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.8); overflow-y: auto; }
 .modal-content { background: #fdfcf0; margin: 5% auto; padding: 20px; width: 85%; border-radius: 20px; position: relative; text-align: center; }

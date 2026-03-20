@@ -178,32 +178,17 @@ function buildAuthLoginOverlay() {
     return overlay;
 }
 
-function ensureLogoutButton() {
-    const uploadArea = document.querySelector('.upload-area');
-    const senderBtn = document.getElementById('sender-btn');
-    if (!uploadArea || !senderBtn) return;
+function openSettingsMenu() {
+    const modal = document.getElementById('settings-menu-modal');
+    const btn = document.getElementById('settings-btn');
+    if (modal) modal.style.display = 'block';
+    if (btn) btn.setAttribute('aria-expanded', 'true');
+}
 
-    let row = uploadArea.querySelector('.upload-area-actions');
-    if (!row) {
-        row = document.createElement('div');
-        row.className = 'upload-area-actions';
-        uploadArea.insertBefore(row, senderBtn);
-        row.appendChild(senderBtn);
-    }
-
-    let btn = document.getElementById('auth-logout-btn');
-    if (!btn) {
-        btn = document.createElement('button');
-        btn.type = 'button';
-        btn.id = 'auth-logout-btn';
-        btn.className = 'auth-logout-btn';
-        btn.textContent = 'ログアウト';
-        btn.style.display = 'none';
-        btn.addEventListener('click', () => firebase.auth().signOut());
-    }
-    if (btn.parentNode !== row) row.appendChild(btn);
-
-    document.querySelectorAll('.auth-user-actions').forEach((el) => el.remove());
+function closeSettingsMenu() {
+    closeModal('settings-menu-modal');
+    const btn = document.getElementById('settings-btn');
+    if (btn) btn.setAttribute('aria-expanded', 'false');
 }
 
 function setLoginOverlayVisible(visible) {
@@ -212,9 +197,8 @@ function setLoginOverlayVisible(visible) {
 }
 
 function setLogoutVisible(visible) {
-    ensureLogoutButton();
-    const btn = document.getElementById('auth-logout-btn');
-    if (btn) btn.style.display = visible ? 'inline-block' : 'none';
+    const btn = document.getElementById('settings-logout-btn');
+    if (btn) btn.style.display = visible ? 'block' : 'none';
 }
 
 function handlePhotosSnapshot(snap) {
@@ -244,7 +228,6 @@ function detachPhotosListener() {
 }
 
 buildAuthLoginOverlay();
-ensureLogoutButton();
 setLoginOverlayVisible(true);
 
 firebase.auth().onAuthStateChanged((user) => {
@@ -421,7 +404,31 @@ document.getElementById('main-upload-trigger').onclick = () => {
     else document.getElementById('photo-input').click();
 };
 
-document.getElementById('sender-btn').onclick = () => { document.getElementById('sender-modal').style.display = 'block'; };
+const settingsBtn = document.getElementById('settings-btn');
+if (settingsBtn) {
+    settingsBtn.addEventListener('click', () => openSettingsMenu());
+}
+
+const settingsOpenSender = document.getElementById('settings-open-sender');
+if (settingsOpenSender) {
+    settingsOpenSender.addEventListener('click', () => {
+        closeSettingsMenu();
+        document.getElementById('sender-modal').style.display = 'block';
+    });
+}
+
+const settingsLogoutBtn = document.getElementById('settings-logout-btn');
+if (settingsLogoutBtn) {
+    settingsLogoutBtn.addEventListener('click', () => {
+        closeSettingsMenu();
+        firebase.auth().signOut();
+    });
+}
+
+const settingsMenuBackBtn = document.getElementById('settings-menu-back-btn');
+if (settingsMenuBackBtn) {
+    settingsMenuBackBtn.addEventListener('click', () => closeSettingsMenu());
+}
 
 const emojis = ['👵','👴','👨','👩','👧','👦','👶','🐶','🐱','🌸','🌼','🌷'];
 const elist = document.getElementById('emoji-list');
