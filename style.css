@@ -73,7 +73,12 @@ body { font-family: sans-serif; background-color: #fdfcf0; margin: 0; display: f
 .back-btn { background: #888; color: white; }
 .save-btn { background: #d87093; color: white; margin-top: 20px; }
 
-.upload-area { text-align: center; margin-top: 16px; }
+.upload-area { text-align: center; margin-top: 0; }
+/* カレンダーカードの枠の外・すぐ下（スクロール領域は calendar-container に統一） */
+.calendar-container > .upload-area {
+    margin-top: 8px;
+    padding-bottom: 4px;
+}
 .main-button { background: #d87093; color: white; padding: 15px; border-radius: 40px; font-weight: bold; width: 90%; display: inline-block; cursor: pointer; margin-bottom: 0; box-sizing: border-box; }
 .settings-main-btn {
     margin-top: 0;
@@ -105,20 +110,22 @@ body { font-family: sans-serif; background-color: #fdfcf0; margin: 0; display: f
     font-weight: bold;
 }
 
-/* スマホ：下の余白を減らしつつ、タイトル・カレンダーを大きくして画面中央付近にまとめる。ページ全体の縦スクロールは出さない */
+/* スマホ：タイトル・カレンダーを中央付近に。上から引いてリロード（pull-to-refresh）が効きやすいよう html の縦オーバースクロールを許可 */
 @media (max-width: 640px) {
   html {
-    height: 100dvh;
-    height: 100vh;
-    overflow: hidden;
+    min-height: 100dvh;
+    min-height: 100vh;
+    overflow-x: hidden;
+    overflow-y: auto;
   }
   body {
-    height: 100%;
-    max-height: 100%;
+    min-height: 100dvh;
+    min-height: 100vh;
     margin: 0;
     padding: 0;
-    overflow: hidden;
-    overscroll-behavior: none;
+    overflow-x: hidden;
+    overflow-y: visible;
+    overscroll-behavior-y: auto;
     touch-action: manipulation;
     box-sizing: border-box;
   }
@@ -127,7 +134,7 @@ body { font-family: sans-serif; background-color: #fdfcf0; margin: 0; display: f
     align-self: center;
     width: min(96%, 440px);
     min-height: 0;
-    max-height: 100%;
+    max-height: none;
     display: flex;
     flex-direction: column;
     justify-content: center;
@@ -136,14 +143,14 @@ body { font-family: sans-serif; background-color: #fdfcf0; margin: 0; display: f
     padding-left: env(safe-area-inset-left, 0px);
     padding-right: env(safe-area-inset-right, 0px);
     box-sizing: border-box;
-    overflow: hidden;
+    overflow: visible;
   }
   .calendar-container {
     flex: 1 1 auto;
     min-height: 0;
     overflow-y: auto;
     -webkit-overflow-scrolling: touch;
-    overscroll-behavior: contain;
+    overscroll-behavior-y: auto;
   }
   .main-title {
     font-size: clamp(1.55rem, 5.2vw, 2.05rem);
@@ -177,9 +184,9 @@ body { font-family: sans-serif; background-color: #fdfcf0; margin: 0; display: f
   .photo-container {
     height: clamp(54px, 15vw, 66px);
   }
-  .upload-area {
-    margin-top: 18px;
-    flex-shrink: 0;
+  .calendar-container > .upload-area {
+    margin-top: 16px;
+    padding-bottom: 4px;
   }
   .main-title,
   .user-status-text {
