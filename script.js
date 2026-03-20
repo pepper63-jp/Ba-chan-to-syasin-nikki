@@ -88,13 +88,6 @@ function injectAuthLoginStyles() {
             min-height: 1.25em; margin: 0 0 10px 0;
             font-size: 0.85rem; color: #c44; text-align: center;
         }
-        .auth-user-actions { text-align: center; margin: 0 0 10px 0; }
-        .auth-logout-btn {
-            background: white; border: 2px solid #d87093; color: #d87093;
-            padding: 8px 18px; border-radius: 20px; font-weight: bold;
-            font-size: 0.85rem; cursor: pointer;
-        }
-        .auth-logout-btn:active { opacity: 0.85; }
     `;
     document.head.appendChild(style);
 }
@@ -186,21 +179,31 @@ function buildAuthLoginOverlay() {
 }
 
 function ensureLogoutButton() {
-    if (document.getElementById('auth-logout-btn')) return;
-    const status = document.getElementById('user-status');
-    if (!status || !status.parentNode) return;
+    const uploadArea = document.querySelector('.upload-area');
+    const senderBtn = document.getElementById('sender-btn');
+    if (!uploadArea || !senderBtn) return;
 
-    const wrap = document.createElement('div');
-    wrap.className = 'auth-user-actions';
-    const btn = document.createElement('button');
-    btn.type = 'button';
-    btn.id = 'auth-logout-btn';
-    btn.className = 'auth-logout-btn';
-    btn.textContent = 'ログアウト';
-    btn.style.display = 'none';
-    btn.addEventListener('click', () => firebase.auth().signOut());
-    wrap.appendChild(btn);
-    status.parentNode.insertBefore(wrap, status.nextSibling);
+    let row = uploadArea.querySelector('.upload-area-actions');
+    if (!row) {
+        row = document.createElement('div');
+        row.className = 'upload-area-actions';
+        uploadArea.insertBefore(row, senderBtn);
+        row.appendChild(senderBtn);
+    }
+
+    let btn = document.getElementById('auth-logout-btn');
+    if (!btn) {
+        btn = document.createElement('button');
+        btn.type = 'button';
+        btn.id = 'auth-logout-btn';
+        btn.className = 'auth-logout-btn';
+        btn.textContent = 'ログアウト';
+        btn.style.display = 'none';
+        btn.addEventListener('click', () => firebase.auth().signOut());
+    }
+    if (btn.parentNode !== row) row.appendChild(btn);
+
+    document.querySelectorAll('.auth-user-actions').forEach((el) => el.remove());
 }
 
 function setLoginOverlayVisible(visible) {
@@ -246,6 +249,10 @@ setLoginOverlayVisible(true);
 
 firebase.auth().onAuthStateChanged((user) => {
     if (user) {
+        if (user.isAnonymous === true) {
+            firebase.auth().signOut();
+            return;
+        }
         setLoginOverlayVisible(false);
         setLogoutVisible(true);
         attachPhotosListener();
