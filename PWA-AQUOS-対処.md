@@ -29,7 +29,7 @@
   - `scope`: `"/"` を追加  
   - `id`: `"/"` を追加  
   - アイコンを **PNG のみ**（`/icon-192.png`, `/icon-512.png`）に変更  
-  - `orientation`: `"any"` を追加（互換性のため）
+  - `orientation`: `"portrait-primary"`（端末の「自動回転オフ」と縦持ち利用に合わせる。以前の `"any"` は PWA が勝手に回転することがあった）
 - `public` フォルダに **icon-192.png** と **icon-512.png** を配置
 
 修正を反映したうえで、**Firebase などに再デプロイ**してください。
