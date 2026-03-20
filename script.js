@@ -358,11 +358,16 @@ function openPhotoModal(key) {
             const photoItem = document.createElement('div');
             photoItem.className = 'modal-photo-item';
             const canDelete = currentUser && item.sender && currentUser.name === item.sender;
+            const caption = [
+                formatPostDateTime(item.timestamp, key),
+                item.icon || '👤',
+                item.sender || 'ななし'
+            ].filter(Boolean).join(' ');
             photoItem.innerHTML = `
                 ${canDelete ? `<button class="delete-btn" onclick="event.stopPropagation(); deletePhoto('${key}', '${id}')">×</button>` : ''}
                 <img src="${item.src}" class="modal-img" onclick="openZoomWithIndex(${index})">
                 <br>
-                <small>${formatTime(item.timestamp)} ${item.icon || '👤'} ${item.sender || 'ななし'}</small>
+                <small>${caption}</small>
             `;
             list.appendChild(photoItem);
         });
@@ -370,15 +375,29 @@ function openPhotoModal(key) {
     document.getElementById('modal').style.display = 'block';
 }
 
-// 投稿時間を「HH:MM」形式で表示するための関数
-function formatTime(timestamp) {
-    if (!timestamp) return '';
-    try {
-        const date = new Date(timestamp);
-        return date.toLocaleTimeString('ja-JP', { hour: '2-digit', minute: '2-digit' });
-    } catch (e) {
-        return '';
+// 投稿日時を「3/15 13:58」形式（日付キーは M/D、時刻は24時間）で表示
+function formatPostDateTime(timestamp, dateKeyFallback) {
+    const tsNum = timestamp != null ? Number(timestamp) : NaN;
+    const hasTs = !Number.isNaN(tsNum);
+    let d = null;
+    if (hasTs) {
+        d = new Date(tsNum);
+        if (Number.isNaN(d.getTime())) d = null;
     }
+    if (!d && dateKeyFallback) {
+        const parts = dateKeyFallback.split('-').map((n) => parseInt(n, 10));
+        if (parts.length === 3 && parts.every((n) => !Number.isNaN(n))) {
+            d = new Date(parts[0], parts[1] - 1, parts[2]);
+        }
+    }
+    if (!d || Number.isNaN(d.getTime())) return '';
+    const md = `${d.getMonth() + 1}/${d.getDate()}`;
+    if (hasTs) {
+        const hh = String(d.getHours()).padStart(2, '0');
+        const mm = String(d.getMinutes()).padStart(2, '0');
+        return `${md} ${hh}:${mm}`;
+    }
+    return md;
 }
 
 function deletePhoto(dateKey, photoId) {
