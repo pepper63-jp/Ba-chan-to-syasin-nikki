@@ -10,6 +10,7 @@ const firebaseConfig = {
 };
 firebase.initializeApp(firebaseConfig);
 const database = firebase.database();
+const photosRef = database.ref('photos');
 
 // 2. 変数管理（ここを確実に初期化します）
 let currentDisplayDate = new Date();
@@ -33,30 +34,229 @@ function updateUserStatus() {
     }
 }
 
-// 3. 匿名ログインと合言葉（処理を整理しました）
-firebase.auth().signInAnonymously().then(() => {
-    if (localStorage.getItem('pass-ok') !== 'true') {
-        const pass = prompt("合言葉を入力してね（親族専用）");
-        if (pass === 'abc') {
-            localStorage.setItem('pass-ok', 'true');
-        } else {
-            alert("合言葉が違います。もう一度開いてね。");
-            location.reload(); 
-        }
-    }
-}).catch(err => console.error("Login Error:", err));
+// 3. メール／パスワード認証（ログイン UI は JS で生成）
+const AUTH_LOGIN_ERR = 'メールアドレスかパスワードが違います';
 
-// 4. データのリアルタイム監視
-database.ref('photos').on('value', (snap) => {
+function injectAuthLoginStyles() {
+    if (document.getElementById('auth-login-styles')) return;
+    const style = document.createElement('style');
+    style.id = 'auth-login-styles';
+    style.textContent = `
+        .auth-login-overlay {
+            position: fixed; inset: 0; z-index: 30000;
+            display: none; align-items: center; justify-content: center;
+            background: rgba(253, 252, 240, 0.92);
+            padding: 20px; box-sizing: border-box;
+        }
+        .auth-login-overlay.visible { display: flex; }
+        .auth-login-card {
+            width: 100%; max-width: 340px;
+            background: #fff; border-radius: 20px;
+            border: 3px solid #ffb7c5;
+            box-shadow: 0 8px 24px rgba(216, 112, 147, 0.2);
+            padding: 28px 22px; box-sizing: border-box;
+        }
+        .auth-login-card h2 {
+            margin: 0 0 18px 0; text-align: center;
+            font-size: 1.15rem; color: #d87093;
+        }
+        .auth-login-card label {
+            display: block; font-size: 0.8rem; color: #8b5e3c;
+            margin-bottom: 4px; text-align: left;
+        }
+        .auth-login-card input[type="email"],
+        .auth-login-card input[type="password"] {
+            width: 100%; box-sizing: border-box;
+            padding: 12px 14px; margin-bottom: 14px;
+            border: 2px solid #ffb7c5; border-radius: 12px;
+            font-size: 1rem; background: #fffafa; color: #444;
+        }
+        .auth-login-card input:focus {
+            outline: none; border-color: #d87093;
+            box-shadow: 0 0 0 3px rgba(255, 183, 197, 0.45);
+        }
+        .auth-login-submit {
+            width: 100%; margin-top: 6px; padding: 14px;
+            border: none; border-radius: 14px; font-size: 1.05rem;
+            font-weight: bold; cursor: pointer; color: #fff;
+            background: #d87093;
+            box-shadow: 0 4px 0 rgba(180, 80, 110, 0.35);
+        }
+        .auth-login-submit:active { transform: translateY(2px); box-shadow: none; }
+        .auth-login-submit:disabled { opacity: 0.65; cursor: not-allowed; transform: none; }
+        .auth-login-error {
+            min-height: 1.25em; margin: 0 0 10px 0;
+            font-size: 0.85rem; color: #c44; text-align: center;
+        }
+        .auth-user-actions { text-align: center; margin: 0 0 10px 0; }
+        .auth-logout-btn {
+            background: white; border: 2px solid #d87093; color: #d87093;
+            padding: 8px 18px; border-radius: 20px; font-weight: bold;
+            font-size: 0.85rem; cursor: pointer;
+        }
+        .auth-logout-btn:active { opacity: 0.85; }
+    `;
+    document.head.appendChild(style);
+}
+
+function buildAuthLoginOverlay() {
+    injectAuthLoginStyles();
+    let overlay = document.getElementById('auth-login-overlay');
+    if (overlay) return overlay;
+
+    overlay = document.createElement('div');
+    overlay.id = 'auth-login-overlay';
+    overlay.className = 'auth-login-overlay';
+    overlay.setAttribute('role', 'dialog');
+    overlay.setAttribute('aria-modal', 'true');
+    overlay.setAttribute('aria-labelledby', 'auth-login-title');
+
+    const card = document.createElement('div');
+    card.className = 'auth-login-card';
+
+    const title = document.createElement('h2');
+    title.id = 'auth-login-title';
+    title.textContent = 'ログイン';
+
+    const err = document.createElement('p');
+    err.className = 'auth-login-error';
+    err.setAttribute('aria-live', 'polite');
+
+    const form = document.createElement('form');
+
+    const emailLabel = document.createElement('label');
+    emailLabel.htmlFor = 'auth-email';
+    emailLabel.textContent = 'メールアドレス';
+    const emailInput = document.createElement('input');
+    emailInput.type = 'email';
+    emailInput.id = 'auth-email';
+    emailInput.name = 'email';
+    emailInput.autocomplete = 'username';
+    emailInput.required = true;
+
+    const passLabel = document.createElement('label');
+    passLabel.htmlFor = 'auth-password';
+    passLabel.textContent = 'パスワード';
+    const passInput = document.createElement('input');
+    passInput.type = 'password';
+    passInput.id = 'auth-password';
+    passInput.name = 'password';
+    passInput.autocomplete = 'current-password';
+    passInput.required = true;
+
+    const submit = document.createElement('button');
+    submit.type = 'submit';
+    submit.className = 'auth-login-submit';
+    submit.textContent = 'ログインする';
+
+    const clearErr = () => { err.textContent = ''; };
+    emailInput.addEventListener('input', clearErr);
+    passInput.addEventListener('input', clearErr);
+
+    form.addEventListener('submit', async (e) => {
+        e.preventDefault();
+        err.textContent = '';
+        submit.disabled = true;
+        try {
+            await firebase.auth().signInWithEmailAndPassword(
+                emailInput.value.trim(),
+                passInput.value
+            );
+            passInput.value = '';
+        } catch (loginErr) {
+            console.error('Login Error:', loginErr);
+            err.textContent = AUTH_LOGIN_ERR;
+        } finally {
+            submit.disabled = false;
+        }
+    });
+
+    form.appendChild(emailLabel);
+    form.appendChild(emailInput);
+    form.appendChild(passLabel);
+    form.appendChild(passInput);
+    form.appendChild(submit);
+
+    card.appendChild(title);
+    card.appendChild(err);
+    card.appendChild(form);
+    overlay.appendChild(card);
+    document.body.appendChild(overlay);
+    return overlay;
+}
+
+function ensureLogoutButton() {
+    if (document.getElementById('auth-logout-btn')) return;
+    const status = document.getElementById('user-status');
+    if (!status || !status.parentNode) return;
+
+    const wrap = document.createElement('div');
+    wrap.className = 'auth-user-actions';
+    const btn = document.createElement('button');
+    btn.type = 'button';
+    btn.id = 'auth-logout-btn';
+    btn.className = 'auth-logout-btn';
+    btn.textContent = 'ログアウト';
+    btn.style.display = 'none';
+    btn.addEventListener('click', () => firebase.auth().signOut());
+    wrap.appendChild(btn);
+    status.parentNode.insertBefore(wrap, status.nextSibling);
+}
+
+function setLoginOverlayVisible(visible) {
+    const overlay = buildAuthLoginOverlay();
+    overlay.classList.toggle('visible', visible);
+}
+
+function setLogoutVisible(visible) {
+    ensureLogoutButton();
+    const btn = document.getElementById('auth-logout-btn');
+    if (btn) btn.style.display = visible ? 'inline-block' : 'none';
+}
+
+function handlePhotosSnapshot(snap) {
     photoData = snap.val() || {};
     renderCalendar();
-    // モーダルが開いている場合は更新
     if (document.getElementById('modal').style.display === 'block' && selectedDateKey) {
         openPhotoModal(selectedDateKey);
     }
+}
+
+let photosListenerAttached = false;
+
+function attachPhotosListener() {
+    if (photosListenerAttached) return;
+    photosRef.on('value', handlePhotosSnapshot);
+    photosListenerAttached = true;
+}
+
+function detachPhotosListener() {
+    if (!photosListenerAttached) return;
+    photosRef.off('value', handlePhotosSnapshot);
+    photosListenerAttached = false;
+    photoData = {};
+    renderCalendar();
+    const modal = document.getElementById('modal');
+    if (modal) modal.style.display = 'none';
+}
+
+buildAuthLoginOverlay();
+ensureLogoutButton();
+setLoginOverlayVisible(true);
+
+firebase.auth().onAuthStateChanged((user) => {
+    if (user) {
+        setLoginOverlayVisible(false);
+        setLogoutVisible(true);
+        attachPhotosListener();
+    } else {
+        detachPhotosListener();
+        setLogoutVisible(false);
+        setLoginOverlayVisible(true);
+    }
 });
 
-// 5. カレンダー描画
+// 4. カレンダー描画
 function renderCalendar() {
     const y = currentDisplayDate.getFullYear(), m = currentDisplayDate.getMonth();
     document.getElementById('calendar-title').innerHTML = `<span class="calendar-title-text">${y}年 ${m + 1}月</span>`;
@@ -119,7 +319,7 @@ function updateThumbs(key) {
     });
 }
 
-// 6. アップロードとモーダル関連
+// 5. アップロードとモーダル関連
 document.getElementById('photo-input').onchange = async (e) => {
     const files = Array.from(e.target.files);
     if (files.length > 0 && selectedDateKey && currentUser) {
@@ -207,7 +407,7 @@ function deletePhoto(dateKey, photoId) {
 
 function closeModal(id) { document.getElementById(id).style.display = 'none'; }
 
-// 7. ボタン操作とユーザー設定
+// 6. ボタン操作とユーザー設定
 document.getElementById('main-upload-trigger').onclick = () => {
     if (!selectedDateKey) alert('日付を選んでね！');
     else if (!currentUser) document.getElementById('sender-modal').style.display = 'block';
