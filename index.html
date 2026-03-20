@@ -44,10 +44,6 @@
 
     <div class="upload-area">
         <input type="file" id="photo-input" accept="image/*" multiple style="display: none;">
-        <div class="main-button" id="main-upload-trigger">
-            ✨ 写真をのせる ✨<br>
-            <small>（日付を選んでからここを押してね！）</small>
-        </div>
         <button type="button" class="main-button settings-main-btn" id="settings-btn" aria-haspopup="dialog" aria-expanded="false" aria-controls="settings-menu-modal" title="設定">
             <span class="settings-main-btn-inner">
                 <svg class="settings-gear-icon" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" width="28" height="28" aria-hidden="true" focusable="false">
@@ -89,6 +85,14 @@
         <input type="text" id="user-name-input" placeholder="おなまえ" class="name-input">
         <button class="standard-btn save-btn" onclick="saveCustomUser()">決定！</button>
         <button class="standard-btn back-btn" onclick="closeModal('sender-modal')">もどる</button>
+    </div>
+</div>
+
+<div id="empty-day-modal" class="modal" role="dialog" aria-modal="true" aria-labelledby="empty-day-modal-title">
+    <div class="modal-content">
+        <h2 id="empty-day-modal-title"></h2>
+        <button type="button" class="standard-btn add-photo-btn" id="empty-day-upload-btn">📸写真をのせる</button>
+        <button type="button" class="standard-btn back-btn" id="empty-day-back-btn">もどる</button>
     </div>
 </div>
 

@@ -225,6 +225,8 @@ function detachPhotosListener() {
     renderCalendar();
     const modal = document.getElementById('modal');
     if (modal) modal.style.display = 'none';
+    const emptyDayModal = document.getElementById('empty-day-modal');
+    if (emptyDayModal) emptyDayModal.style.display = 'none';
 }
 
 buildAuthLoginOverlay();
@@ -280,7 +282,9 @@ function renderCalendar() {
         cell.onclick = () => { 
             selectedDateKey = key; 
             renderCalendar(); 
-            if (photoData[key]) openPhotoModal(key);
+            const hasPhotos = photoData[key] && Object.keys(photoData[key]).length > 0;
+            if (hasPhotos) openPhotoModal(key);
+            else openEmptyDayModal(key);
         };
         container.appendChild(cell);
         updateThumbs(key);
@@ -344,7 +348,23 @@ async function compressImage(base64) {
     });
 }
 
+function openEmptyDayModal(key) {
+    const modal = document.getElementById('empty-day-modal');
+    const titleEl = document.getElementById('empty-day-modal-title');
+    if (!modal || !titleEl) return;
+    const parts = key.split('-').map((n) => parseInt(n, 10));
+    if (parts.length === 3 && parts.every((n) => !Number.isNaN(n))) {
+        titleEl.textContent = `${parts[1]}月${parts[2]}日`;
+    } else {
+        titleEl.textContent = '';
+    }
+    modal.style.display = 'block';
+}
+
 function openPhotoModal(key) {
+    const emptyModal = document.getElementById('empty-day-modal');
+    if (emptyModal) emptyModal.style.display = 'none';
+
     const list = document.getElementById('modal-photo-list');
     if (!list) return;
     list.innerHTML = '';
@@ -416,12 +436,19 @@ function deletePhoto(dateKey, photoId) {
 
 function closeModal(id) { document.getElementById(id).style.display = 'none'; }
 
+function requestPhotoUpload() {
+    if (!selectedDateKey) {
+        alert('日付を選んでね！');
+        return;
+    }
+    if (!currentUser) {
+        document.getElementById('sender-modal').style.display = 'block';
+        return;
+    }
+    document.getElementById('photo-input').click();
+}
+
 // 6. ボタン操作とユーザー設定
-document.getElementById('main-upload-trigger').onclick = () => {
-    if (!selectedDateKey) alert('日付を選んでね！');
-    else if (!currentUser) document.getElementById('sender-modal').style.display = 'block';
-    else document.getElementById('photo-input').click();
-};
 
 const settingsBtn = document.getElementById('settings-btn');
 if (settingsBtn) {
@@ -479,17 +506,14 @@ function saveCustomUser() {
 function changeMonth(n) { currentDisplayDate.setMonth(currentDisplayDate.getMonth() + n); renderCalendar(); }
 function goToday() { currentDisplayDate = new Date(); selectedDateKey = null; renderCalendar(); }
 
-// モーダル内の「追加」ボタンを動かす
 const modalAddBtn = document.getElementById('modal-add-btn');
-if (modalAddBtn) {
-    modalAddBtn.onclick = () => {
-        if (!currentUser) {
-            document.getElementById('sender-modal').style.display = 'block';
-        } else {
-            document.getElementById('photo-input').click();
-        }
-    };
-}
+if (modalAddBtn) modalAddBtn.addEventListener('click', () => requestPhotoUpload());
+
+const emptyDayUploadBtn = document.getElementById('empty-day-upload-btn');
+if (emptyDayUploadBtn) emptyDayUploadBtn.addEventListener('click', () => requestPhotoUpload());
+
+const emptyDayBackBtn = document.getElementById('empty-day-back-btn');
+if (emptyDayBackBtn) emptyDayBackBtn.addEventListener('click', () => closeModal('empty-day-modal'));
 
 // --- ズーム・スワイプ機能 ---
 function openZoomWithIndex(index) {

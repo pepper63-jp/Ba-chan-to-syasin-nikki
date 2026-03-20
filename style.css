@@ -79,7 +79,7 @@ body { font-family: sans-serif; background-color: #fdfcf0; margin: 0; display: f
 .upload-area { text-align: center; margin-top: 16px; }
 .main-button { background: #d87093; color: white; padding: 15px; border-radius: 40px; font-weight: bold; width: 90%; display: inline-block; cursor: pointer; margin-bottom: 0; box-sizing: border-box; }
 .settings-main-btn {
-    margin-top: 12px;
+    margin-top: 0;
     box-sizing: border-box;
     background: #fff;
     color: #d87093;
