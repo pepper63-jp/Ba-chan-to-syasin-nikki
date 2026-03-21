@@ -261,6 +261,8 @@ firebase.auth().onAuthStateChanged((user) => {
         setLoginOverlayVisible(false);
         setLogoutVisible(true);
         attachPhotosListener();
+        // 通知の許可を求めてトークンを保存する
+        requestNotificationPermission();
     } else {
         detachPhotosListener();
         setLogoutVisible(false);
@@ -643,6 +645,26 @@ function goNext() {
     }
 }
 
+// 通知許可を求めてFCMトークンをデータベースに保存する
+async function requestNotificationPermission() {
+    try {
+        const messaging = firebase.messaging();
+        const permission = await Notification.requestPermission();
+        if (permission !== 'granted') return;
+
+        const token = await messaging.getToken({
+            vapidKey: 'BKIljBShJULc0OZAnzDC1P_9msiBbn4J_FE_KY8wQnP7DkmEWcOK322V9x98p8Xj4qr0CjvOATlyNmI6kpxrfPE'
+        });
+        if (token) {
+            // トークンをデータベースの tokens/ に保存する
+            await database.ref('tokens/' + token).set({
+                updatedAt: firebase.database.ServerValue.TIMESTAMP
+            });
+        }
+    } catch(e) {
+        // 通知が使えない環境では何もしない
+    }
+}
 // 初回実行
 renderCalendarWithHolidays();
 updateUserStatus();
