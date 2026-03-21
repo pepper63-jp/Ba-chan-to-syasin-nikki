@@ -463,6 +463,14 @@ if (settingsOpenSender) {
     });
 }
 
+const settingsOpenHowto = document.getElementById('settings-open-howto');
+if (settingsOpenHowto) {
+    settingsOpenHowto.addEventListener('click', () => {
+        closeSettingsMenu();
+        document.getElementById('howto-modal').style.display = 'block';
+    });
+}
+
 const settingsLogoutBtn = document.getElementById('settings-logout-btn');
 if (settingsLogoutBtn) {
     settingsLogoutBtn.addEventListener('click', () => {
