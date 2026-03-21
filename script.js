@@ -243,9 +243,13 @@ function detachPhotosListener() {
 }
 
 buildAuthLoginOverlay();
-setLoginOverlayVisible(true);
+// 起動直後はログイン画面を見せず、ローディング画面を表示する
+document.getElementById('loading-overlay').style.display = 'flex';
+document.getElementById('loading-text').innerText = '読み込み中...';
 
 firebase.auth().onAuthStateChanged((user) => {
+    // Firebaseの確認が終わったらローディングを隠す
+    document.getElementById('loading-overlay').style.display = 'none';
     if (user) {
         if (user.isAnonymous === true) {
             firebase.auth().signOut();
