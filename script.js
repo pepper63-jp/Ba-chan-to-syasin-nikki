@@ -378,9 +378,13 @@ document.getElementById('photo-input').onchange = async (e) => {
                 const r = new FileReader(); r.onload = (ev) => res(ev.target.result); r.readAsDataURL(files[i]);
             });
             const compressed = await compressImage(base64);
+            const messaging = firebase.messaging();
+            let senderToken = null;
+            try { senderToken = await messaging.getToken({ vapidKey: 'BKIljBShJULc0OZAnzDC1P_9msiBbn4J_FE_KY8wQnP7DkmEWcOK322V9x98p8Xj4qr0CjvOATlyNmI6kpxrfPE' }); } catch(e) {}
             await database.ref(`photos/${selectedDateKey}`).push({ 
                 src: compressed, sender: currentUser.name, icon: currentUser.icon, 
-                timestamp: firebase.database.ServerValue.TIMESTAMP 
+                timestamp: firebase.database.ServerValue.TIMESTAMP,
+                token: senderToken
             });
         }
         document.getElementById('loading-overlay').style.display = 'none';
