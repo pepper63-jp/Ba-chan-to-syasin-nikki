@@ -23,6 +23,17 @@ let currentPhotoIndex = 0;
 let currentUser = JSON.parse(localStorage.getItem('flowerUser')) || null;
 let selEmoji = currentUser ? currentUser.icon : '';
 
+// 前回のデータをキャッシュから読み込んで即座に表示する
+const cachedData = localStorage.getItem('photoDataCache');
+if (cachedData) {
+    try {
+        photoData = JSON.parse(cachedData);
+        renderCalendar();
+    } catch(e) {
+        // キャッシュが壊れていた場合は無視する
+    }
+}
+
 // 画面上部の「あなたは【〇〇】さんです」表示を更新
 function updateUserStatus() {
     const el = document.getElementById('user-status');
@@ -203,6 +214,8 @@ function setLogoutVisible(visible) {
 
 function handlePhotosSnapshot(snap) {
     photoData = snap.val() || {};
+    // 最新データを端末に保存して次回起動時に即表示できるようにする
+    try { localStorage.setItem('photoDataCache', JSON.stringify(photoData)); } catch(e) {}
     renderCalendar();
     if (document.getElementById('modal').style.display === 'block' && selectedDateKey) {
         openPhotoModal(selectedDateKey);
