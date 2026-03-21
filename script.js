@@ -279,12 +279,17 @@ function renderCalendar() {
         cell.className = `date-cell ${dateClass}`;
         cell.innerHTML = `<div class="date-number">${d}</div><div class="photo-container" id="thumb-${key}"></div>`;
         
-        cell.onclick = () => { 
-            selectedDateKey = key; 
-            renderCalendar(); 
-            const hasPhotos = photoData[key] && Object.keys(photoData[key]).length > 0;
-            if (hasPhotos) openPhotoModal(key);
-            else openEmptyDayModal(key);
+        cell.onclick = () => {
+            if (selectedDateKey === key) {
+                // 同じ日付を2回タップしたらモーダルを開く
+                const hasPhotos = photoData[key] && Object.keys(photoData[key]).length > 0;
+                if (hasPhotos) openPhotoModal(key);
+                else openEmptyDayModal(key);
+            } else {
+                // 別の日付をタップしたらハイライトだけ変える
+                selectedDateKey = key;
+                renderCalendar();
+            }
         };
         container.appendChild(cell);
         updateThumbs(key);
