@@ -4,8 +4,12 @@ body { font-family: sans-serif; background-color: #fdfcf0; margin: 0; display: f
   font-size: 1.9rem;
   text-align: center;
   color: #d87093;
-  margin: 20px 0 8px 0;
+  margin: 12px 0;
   white-space: nowrap;
+  min-height: 60px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
 }
 .user-status-text {
     font-size: 0.85rem;
