@@ -23,12 +23,15 @@ let currentPhotoIndex = 0;
 let currentUser = JSON.parse(localStorage.getItem('flowerUser')) || null;
 let selEmoji = currentUser ? currentUser.icon : '';
 
+// 祝日データの一時保存用（例："2026-3" → ["2026-3-20", "2026-3-21"] のような形式）
+let holidayCache = {};
+
 // 前回のデータをキャッシュから読み込んで即座に表示する
 const cachedData = localStorage.getItem('photoDataCache');
 if (cachedData) {
     try {
         photoData = JSON.parse(cachedData);
-        renderCalendar();
+        renderCalendarWithHolidays();
     } catch(e) {
         // キャッシュが壊れていた場合は無視する
     }
@@ -216,7 +219,7 @@ function handlePhotosSnapshot(snap) {
     photoData = snap.val() || {};
     // 最新データを端末に保存して次回起動時に即表示できるようにする
     try { localStorage.setItem('photoDataCache', JSON.stringify(photoData)); } catch(e) {}
-    renderCalendar();
+    renderCalendarWithHolidays();
     if (document.getElementById('modal').style.display === 'block' && selectedDateKey) {
         openPhotoModal(selectedDateKey);
     }
@@ -235,7 +238,7 @@ function detachPhotosListener() {
     photosRef.off('value', handlePhotosSnapshot);
     photosListenerAttached = false;
     photoData = {};
-    renderCalendar();
+    renderCalendarWithHolidays();
     const modal = document.getElementById('modal');
     if (modal) modal.style.display = 'none';
     const emptyDayModal = document.getElementById('empty-day-modal');
@@ -266,14 +269,12 @@ firebase.auth().onAuthStateChanged((user) => {
 });
 
 // 4. カレンダー描画
-function renderCalendar() {
+function renderCalendar(holidays = []) {
     const y = currentDisplayDate.getFullYear(), m = currentDisplayDate.getMonth();
     document.getElementById('calendar-title').innerHTML = `<span class="calendar-title-text">${y}年 ${m + 1}月</span>`;
     const titleWrapper = document.querySelector('#calendar-title .calendar-title-text');
     if (titleWrapper) {
-        titleWrapper.onclick = () => {
-            goToday();
-        };
+        titleWrapper.onclick = () => { goToday(); };
     }
     const first = new Date(y, m, 1).getDay(), last = new Date(y, m + 1, 0).getDate();
     const container = document.getElementById('calendar-dates');
@@ -283,33 +284,62 @@ function renderCalendar() {
     for (let i = 0; i < first; i++) container.innerHTML += '<div class="date-cell"></div>';
 
     for (let d = 1; d <= last; d++) {
-        const key = `${y}-${m + 1}-${d}`; // 直感形式
+        const key = `${y}-${m + 1}-${d}`;
         const dayOfWeek = new Date(y, m, d).getDay();
         const isToday = y === realToday.getFullYear() && m === realToday.getMonth() && d === realToday.getDate();
-        
+        const isHoliday = holidays.includes(key);
+
         const cell = document.createElement('div');
         let dateClass = isToday ? 'today' : '';
-        if (dayOfWeek === 0) dateClass += ' sun';
+        if (dayOfWeek === 0 || isHoliday) dateClass += ' sun';
         if (dayOfWeek === 6) dateClass += ' sat';
         if (selectedDateKey === key) dateClass += ' selected-date';
-        
+
         cell.className = `date-cell ${dateClass}`;
         cell.innerHTML = `<div class="date-number">${d}</div><div class="photo-container" id="thumb-${key}"></div>`;
-        
+
         cell.onclick = () => {
             if (selectedDateKey === key) {
-                // 同じ日付を2回タップしたらモーダルを開く
                 const hasPhotos = photoData[key] && Object.keys(photoData[key]).length > 0;
                 if (hasPhotos) openPhotoModal(key);
                 else openEmptyDayModal(key);
             } else {
-                // 別の日付をタップしたらハイライトだけ変える
                 selectedDateKey = key;
-                renderCalendar();
+                renderCalendarWithHolidays();
             }
         };
         container.appendChild(cell);
         updateThumbs(key);
+    }
+}
+
+// 祝日を取得してからカレンダーを描画する
+async function renderCalendarWithHolidays() {
+    const y = currentDisplayDate.getFullYear();
+    const m = currentDisplayDate.getMonth();
+    const cacheKey = `${y}-${m + 1}`;
+
+    // すでに取得済みならキャッシュを使う
+    if (holidayCache[cacheKey]) {
+        renderCalendar(holidayCache[cacheKey]);
+        return;
+    }
+
+    // まず祝日なしで即描画して、取得後に再描画する
+    renderCalendar([]);
+
+    try {
+        const res = await fetch(`https://holidays-jp.github.io/api/v1/${y}/date.json`);
+        const data = await res.json();
+        // APIのキー形式 "2026-03-20" を "2026-3-20" に変換して合わせる
+        const holidays = Object.keys(data).map(dateStr => {
+            const [hy, hm, hd] = dateStr.split('-').map(Number);
+            return `${hy}-${hm}-${hd}`;
+        });
+        holidayCache[cacheKey] = holidays;
+        renderCalendar(holidays);
+    } catch(e) {
+        // 取得失敗しても何も起きない（祝日が赤くならないだけ）
     }
 }
 
@@ -534,8 +564,8 @@ function saveCustomUser() {
     } else alert("おなまえと絵文字をえらんでね！");
 }
 
-function changeMonth(n) { currentDisplayDate.setMonth(currentDisplayDate.getMonth() + n); renderCalendar(); }
-function goToday() { currentDisplayDate = new Date(); selectedDateKey = null; renderCalendar(); }
+function changeMonth(n) { currentDisplayDate.setMonth(currentDisplayDate.getMonth() + n); renderCalendarWithHolidays(); }
+function goToday() { currentDisplayDate = new Date(); selectedDateKey = null; renderCalendarWithHolidays(); }
 
 const modalAddBtn = document.getElementById('modal-add-btn');
 if (modalAddBtn) modalAddBtn.addEventListener('click', () => requestPhotoUpload());
@@ -614,5 +644,5 @@ function goNext() {
 }
 
 // 初回実行
-renderCalendar();
+renderCalendarWithHolidays();
 updateUserStatus();
