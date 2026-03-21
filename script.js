@@ -474,6 +474,7 @@ if (settingsOpenHowto) {
 const settingsLogoutBtn = document.getElementById('settings-logout-btn');
 if (settingsLogoutBtn) {
     settingsLogoutBtn.addEventListener('click', () => {
+        if (!confirm('本当にログアウトしますか？')) return;
         closeSettingsMenu();
         firebase.auth().signOut();
     });
