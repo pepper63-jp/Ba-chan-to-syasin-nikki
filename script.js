@@ -660,8 +660,12 @@ async function requestNotificationPermission() {
             vapidKey: 'BKIljBShJULc0OZAnzDC1P_9msiBbn4J_FE_KY8wQnP7DkmEWcOK322V9x98p8Xj4qr0CjvOATlyNmI6kpxrfPE'
         });
         if (token) {
-            // トークンをデータベースの tokens/ に保存する
-            await database.ref('tokens/' + token).set({
+            // ユーザー名をキーにして保存することで同じ端末で重複しないようにする
+            const userKey = (currentUser && currentUser.name)
+                ? 'user_' + currentUser.name.replace(/[^a-zA-Z0-9ぁ-んァ-ン一-龯]/g, '_')
+                : 'user_anonymous';
+            await database.ref('tokens/' + userKey).set({
+                token: token,
                 updatedAt: firebase.database.ServerValue.TIMESTAMP
             });
         }
