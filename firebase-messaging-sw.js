@@ -13,11 +13,8 @@ firebase.initializeApp({
 
 const messaging = firebase.messaging();
 
-// バックグラウンドで通知を受け取ったときの処理
-messaging.onBackgroundMessage((payload) => {
-    const { title, body } = payload.notification;
-    self.registration.showNotification(title, {
-        body: body,
-        icon: '/icon-192.png'
-    });
+// notification付きメッセージはFCMが自動で表示するため
+// ここでは何もしない（二重表示を防ぐ）
+messaging.onBackgroundMessage((_payload) => {
+    // 意図的に何もしない
 });
