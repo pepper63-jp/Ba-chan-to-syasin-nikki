@@ -10,6 +10,8 @@ body { font-family: sans-serif; background-color: #fdfcf0; margin: 0; display: f
   display: flex;
   align-items: center;
   justify-content: center;
+  width: 100%;
+  box-sizing: border-box;
 }
 .user-status-text {
     font-size: 0.85rem;
@@ -20,7 +22,7 @@ body { font-family: sans-serif; background-color: #fdfcf0; margin: 0; display: f
 }
 .sun { color: #ff4d4d !important; }
 .sat { color: #4d94ff !important; }
-.calendar { background: white; border-radius: 15px; border: 3px solid #ffb7c5; overflow: hidden; box-shadow: 0 4px 10px rgba(0,0,0,0.1); }
+.calendar { width: 100%; box-sizing: border-box; background: white; border-radius: 15px; border: 3px solid #ffb7c5; overflow: hidden; box-shadow: 0 4px 10px rgba(0,0,0,0.1); }
 .calendar-header { background: #ffb7c5; color: white; display: flex; justify-content: space-between; align-items: center; padding: 10px; }
 .nav-btn { 
     background: rgba(255,255,255,0.3); 
@@ -115,89 +117,120 @@ body { font-family: sans-serif; background-color: #fdfcf0; margin: 0; display: f
     font-weight: bold;
 }
 
-/* スマホ：タイトル・カレンダーを中央付近に。上から引いてリロード（pull-to-refresh）が効きやすいよう html の縦オーバースクロールを許可 */
+/* スマホ：画面高さに収め、余った縦幅は日付マス（#calendar-dates）が均等に伸びる。足りないときだけ日付部がスクロール */
 @media (max-width: 640px) {
   html {
-    min-height: 100dvh;
-    min-height: 100vh;
-    overflow-x: hidden;
-    overflow-y: auto;
+    height: 100dvh;
+    overflow: hidden;
   }
   body {
-    min-height: 100dvh;
-    min-height: 100vh;
+    height: 100dvh;
     margin: 0;
     padding: 0;
-    overflow-x: hidden;
-    overflow-y: visible;
-    overscroll-behavior-y: none;
+    overflow: hidden;
+    overscroll-behavior: none;
     touch-action: manipulation;
     box-sizing: border-box;
   }
   .app-wrapper {
-    flex: 1 1 auto;
+    flex: 1 1 0;
+    min-height: 0;
     align-self: center;
     width: min(96%, 440px);
-    min-height: 0;
     max-height: none;
     display: flex;
     flex-direction: column;
     justify-content: flex-start;
-    padding-top: max(20px, env(safe-area-inset-top, 0px));
-    padding-bottom: max(6px, env(safe-area-inset-bottom, 0px));
+    padding-top: max(12px, env(safe-area-inset-top, 0px));
+    padding-bottom: max(4px, env(safe-area-inset-bottom, 0px));
     padding-left: env(safe-area-inset-left, 0px);
     padding-right: env(safe-area-inset-right, 0px);
     box-sizing: border-box;
-    overflow: visible;
+    overflow: hidden;
   }
   .calendar-container {
-    flex: 1 1 auto;
+    flex: 1 1 0;
     min-height: 0;
+    display: flex;
+    flex-direction: column;
+    overflow: hidden;
+  }
+  .calendar {
+    flex: 1 1 0;
+    min-height: 0;
+    display: flex;
+    flex-direction: column;
+    overflow: hidden;
+  }
+  .calendar-header,
+  .calendar > .days-grid:not(#calendar-dates) {
+    flex-shrink: 0;
+  }
+  .calendar-header {
+    padding: 6px 8px;
+  }
+  .calendar-header #calendar-title {
+    font-size: 1.05rem;
+  }
+  .nav-btn {
+    font-size: 1.05rem;
+    padding: 4px 10px;
+  }
+  #calendar-dates {
+    flex: 1 1 0;
+    min-height: 0;
+    grid-auto-rows: minmax(0, 1fr);
     overflow-y: auto;
     -webkit-overflow-scrolling: touch;
-    overscroll-behavior-y: auto;
+    overscroll-behavior-y: contain;
+  }
+  .date-cell {
+    min-height: 0;
+    display: flex;
+    flex-direction: column;
+  }
+  .date-number {
+    flex-shrink: 0;
+    font-size: 0.82rem;
+    padding: 2px;
+  }
+  .photo-container {
+    flex: 1 1 0;
+    min-height: 0;
+    height: auto;
   }
   .main-title {
     font-size: clamp(1.55rem, 5.2vw, 2.05rem);
     margin: 4px 0 2px;
     min-height: auto;
+    width: 100%;
+    box-sizing: border-box;
+    align-self: stretch;
+    min-width: 0;
+    white-space: normal;
   }
   .user-status-text {
-    font-size: 0.95rem;
-    margin-bottom: 5px;
-  }
-  .calendar-header {
-    padding: 12px 10px;
-  }
-  .calendar-header #calendar-title {
-    font-size: 1.38rem;
-  }
-  .nav-btn {
-    font-size: 1.38rem;
-    padding: 7px 16px;
+    font-size: 0.78rem;
+    margin-bottom: 2px;
   }
   .day-name {
-    font-size: 0.84rem;
-    padding: 8px 0;
-  }
-  .date-cell {
-    min-height: clamp(82px, 22vw, 104px);
-  }
-  .date-number {
-    font-size: 1.05rem;
-    padding: 4px;
-  }
-  .photo-container {
-    height: clamp(54px, 15vw, 66px);
+    font-size: 0.72rem;
+    padding: 3px 0;
   }
   .calendar-container > .upload-area {
-    margin-top: 8px;
-    margin-bottom: 8px;
+    margin-top: 4px;
+    margin-bottom: 0;
     padding-bottom: 0;
+    flex-shrink: 0;
   }
   .main-title,
   .user-status-text {
     flex-shrink: 0;
+  }
+  .standard-btn {
+    height: 46px;
+    font-size: 1rem;
+    margin: 6px 0;
   }
 }
 

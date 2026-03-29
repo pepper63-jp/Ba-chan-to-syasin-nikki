@@ -350,7 +350,7 @@ function updateThumbs(key) {
     const div = document.getElementById(`thumb-${key}`);
     if (!div || !photoData[key]) return;
     const sortedIds = Object.keys(photoData[key]).sort((a, b) => (photoData[key][a].timestamp || 0) - (photoData[key][b].timestamp || 0));
-    
+
     sortedIds.slice(0, 4).forEach((id, index) => {
         const wrapper = document.createElement('div');
         wrapper.className = 'photo-wrapper-mini';
