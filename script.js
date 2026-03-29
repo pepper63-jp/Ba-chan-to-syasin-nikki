@@ -20,6 +20,7 @@ let photoData = {};
 let currentPhotoList = [];
 let currentPhotoIndex = 0;
 // 以前のユーザー情報を取得
+let notificationEnabled = localStorage.getItem('notificationEnabled') !== 'false';
 let currentUser = JSON.parse(localStorage.getItem('flowerUser')) || null;
 let selEmoji = currentUser ? currentUser.icon : '';
 
@@ -651,6 +652,7 @@ function goNext() {
 
 // 通知許可を求めてFCMトークンをデータベースに保存する
 async function requestNotificationPermission() {
+    if (!notificationEnabled) return;
     try {
         const messaging = firebase.messaging();
         const permission = await Notification.requestPermission();
@@ -672,6 +674,89 @@ async function requestNotificationPermission() {
     } catch(e) {
         // 通知が使えない環境では何もしない
     }
+}
+
+// 通知モーダルを開いてボタンの状態を現在の設定に合わせて更新する
+function openNotificationModal() {
+    const modal = document.getElementById('notification-modal');
+    if (modal) modal.style.display = 'block';
+    updateNotificationButtons();
+}
+
+// オンボタン・オフボタンの色とテキストを現在の状態に合わせて切り替える
+function updateNotificationButtons() {
+    const onBtn = document.getElementById('notification-on-btn');
+    const offBtn = document.getElementById('notification-off-btn');
+    if (!onBtn || !offBtn) return;
+
+    if (notificationEnabled) {
+        // オンが選ばれている状態
+        onBtn.style.background = '#d87093';
+        onBtn.style.color = 'white';
+        onBtn.textContent = '✅ オン';
+        offBtn.style.background = '#ccc';
+        offBtn.style.color = 'white';
+        offBtn.textContent = 'オフ';
+    } else {
+        // オフが選ばれている状態
+        onBtn.style.background = '#ccc';
+        onBtn.style.color = 'white';
+        onBtn.textContent = 'オン';
+        offBtn.style.background = '#d87093';
+        offBtn.style.color = 'white';
+        offBtn.textContent = '✅ オフ';
+    }
+}
+
+// 通知をオンにする（トークンを取得してデータベースに保存する）
+async function enableNotification() {
+    notificationEnabled = true;
+    localStorage.setItem('notificationEnabled', 'true');
+    await requestNotificationPermission();
+    updateNotificationButtons();
+}
+
+// 通知をオフにする（データベースからトークンを削除する）
+async function disableNotification() {
+    try {
+        const userKey = (currentUser && currentUser.name)
+            ? 'user_' + currentUser.name.replace(/[^a-zA-Z0-9ぁ-んァ-ン一-龯]/g, '_')
+            : 'user_anonymous';
+        await database.ref('tokens/' + userKey).remove();
+    } catch(e) {}
+    notificationEnabled = false;
+    localStorage.setItem('notificationEnabled', 'false');
+    updateNotificationButtons();
+}
+
+// 「🔔 通知」ボタン：設定メニューを閉じて通知モーダルを開く
+const settingsOpenNotification = document.getElementById('settings-open-notification');
+if (settingsOpenNotification) {
+    settingsOpenNotification.addEventListener('click', () => {
+        closeSettingsMenu();
+        openNotificationModal();
+    });
+}
+
+// 「✅ オン」ボタン
+const notificationOnBtn = document.getElementById('notification-on-btn');
+if (notificationOnBtn) {
+    notificationOnBtn.addEventListener('click', () => enableNotification());
+}
+
+// 「オフ」ボタン
+const notificationOffBtn = document.getElementById('notification-off-btn');
+if (notificationOffBtn) {
+    notificationOffBtn.addEventListener('click', () => disableNotification());
+}
+
+// 「もどる」ボタン：通知モーダルを閉じて設定メニューに戻る
+const notificationBackBtn = document.getElementById('notification-back-btn');
+if (notificationBackBtn) {
+    notificationBackBtn.addEventListener('click', () => {
+        closeModal('notification-modal');
+        openSettingsMenu();
+    });
 }
 // 初回実行
 renderCalendarWithHolidays();

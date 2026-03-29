@@ -74,6 +74,7 @@
         <h3 id="settings-menu-title">設定</h3>
         <button type="button" class="standard-btn save-btn" id="settings-open-sender">👤 投稿者の設定を変える</button>
         <button type="button" class="standard-btn add-photo-btn" id="settings-open-howto" style="font-size:1rem; line-height:1.4;">📖 使い方<br><span style="font-size:0.78rem;">（困ったらここを見てね）</span></button>
+        <button type="button" class="standard-btn save-btn" id="settings-open-notification">🔔 通知</button>
         <button type="button" class="standard-btn back-btn" id="settings-logout-btn" style="display: none;">🚪 ログアウト</button>
         <button type="button" class="standard-btn back-btn" id="settings-menu-back-btn">🔙 もどる</button>
     </div>
@@ -174,6 +175,17 @@
             <p>※ iPhoneの方は、ホーム画面から開かないと通知が届きません</p>
         </div>
         <button class="standard-btn back-btn" onclick="closeModal('howto-modal'); openSettingsMenu();">🔙 もどる</button>
+    </div>
+</div>
+
+<div id="notification-modal" class="modal" role="dialog" aria-modal="true" aria-labelledby="notification-modal-title">
+    <div class="modal-content">
+        <h3 id="notification-modal-title">🔔 通知の設定</h3>
+        <div style="display: flex; flex-direction: column; gap: 12px; margin: 20px 0;">
+            <button type="button" class="standard-btn" id="notification-on-btn">✅ オン</button>
+            <button type="button" class="standard-btn" id="notification-off-btn">オフ</button>
+        </div>
+        <button type="button" class="standard-btn back-btn" id="notification-back-btn">🔙 もどる</button>
     </div>
 </div>
 
