@@ -1,4 +1,4 @@
-body { font-family: sans-serif; background-color: #fdfcf0; margin: 0; display: flex; flex-direction: column; align-items: center; -webkit-text-size-adjust: 100%; overflow-x: hidden; touch-action: pan-y; color: #444; }
+body { font-family: sans-serif; background-color: #fdfcf0; margin: 0; display: flex; flex-direction: column; align-items: center; -webkit-text-size-adjust: 100%; overflow-x: hidden; touch-action: pan-y; color: #444; overscroll-behavior: none; }
 .app-wrapper { width: 95%; max-width: 450px; padding-bottom: 6px; box-sizing: border-box; }
 .main-title {
   font-size: 1.9rem;
@@ -130,7 +130,7 @@ body { font-family: sans-serif; background-color: #fdfcf0; margin: 0; display: f
     padding: 0;
     overflow-x: hidden;
     overflow-y: visible;
-    overscroll-behavior-y: auto;
+    overscroll-behavior-y: none;
     touch-action: manipulation;
     box-sizing: border-box;
   }
