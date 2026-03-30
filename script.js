@@ -619,6 +619,11 @@ function openZoomWithIndex(index) {
     };
 }
 
+function closeZoomModal() {
+    const overlay = document.getElementById('zoom-modal');
+    if (overlay) overlay.style.setProperty('display', 'none', 'important');
+}
+
 // 写真を切り替えるときのアニメーション
 function switchPhoto(newIndex, direction) {
     const img = document.getElementById('zoomed-img');
