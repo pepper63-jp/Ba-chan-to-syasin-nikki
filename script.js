@@ -829,8 +829,8 @@ sunset: '#d4733a'
 const themeLabels = {
 sakura: '🌸 桜（さくら）',
 matcha: '🌿 抹茶（まっちゃ）',
-sky: '🌊 空（そら）',
-sunset: '🍊 夕焼け（ゆうやけ）'
+sky: '🌊 海（うみ）',
+sunset: '🌅 夕焼け（ゆうやけ）'
 };
 document.querySelectorAll('.theme-btn').forEach(btn => {
 const theme = btn.getAttribute('data-theme');
