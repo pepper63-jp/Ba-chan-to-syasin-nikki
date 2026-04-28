@@ -217,13 +217,29 @@ function setLogoutVisible(visible) {
 }
 
 function handlePhotosSnapshot(snap) {
-    photoData = snap.val() || {};
-    // 最新データを端末に保存して次回起動時に即表示できるようにする
-    try { localStorage.setItem('photoDataCache', JSON.stringify(photoData)); } catch(e) {}
-    renderCalendarWithHolidays();
-    if (document.getElementById('modal').style.display === 'block' && selectedDateKey) {
-        openPhotoModal(selectedDateKey);
-    }
+photoData = snap.val() || {};
+try {
+const lightCache = {};
+for (const dateKey of Object.keys(photoData)) {
+lightCache[dateKey] = {};
+for (const photoId of Object.keys(photoData[dateKey])) {
+const p = photoData[dateKey][photoId];
+lightCache[dateKey][photoId] = {
+src: p.src,
+sender: p.sender,
+icon: p.icon,
+timestamp: p.timestamp,
+token: p.token,
+storagePath: p.storagePath
+};
+}
+}
+localStorage.setItem('photoDataCache', JSON.stringify(lightCache));
+} catch(e) {}
+renderCalendarWithHolidays();
+if (document.getElementById('modal').style.display === 'block' && selectedDateKey) {
+openPhotoModal(selectedDateKey);
+}
 }
 
 let photosListenerAttached = false;
@@ -370,27 +386,40 @@ function updateThumbs(key) {
 
 // 5. アップロードとモーダル関連
 document.getElementById('photo-input').onchange = async (e) => {
-    const files = Array.from(e.target.files);
-    if (files.length > 0 && selectedDateKey && currentUser) {
-        document.getElementById('loading-overlay').style.display = 'flex';
-        for (let i = 0; i < files.length; i++) {
-            document.getElementById('loading-text').innerText = `${files.length}枚中 ${i+1}枚目を送信中...`;
-            const base64 = await new Promise(res => {
-                const r = new FileReader(); r.onload = (ev) => res(ev.target.result); r.readAsDataURL(files[i]);
-            });
-            const compressed = await compressImage(base64);
-            const messaging = firebase.messaging();
-            let senderToken = null;
-            try { senderToken = await messaging.getToken({ vapidKey: 'BKIljBShJULc0OZAnzDC1P_9msiBbn4J_FE_KY8wQnP7DkmEWcOK322V9x98p8Xj4qr0CjvOATlyNmI6kpxrfPE' }); } catch(e) {}
-            await database.ref(`photos/${selectedDateKey}`).push({ 
-                src: compressed, sender: currentUser.name, icon: currentUser.icon, 
-                timestamp: firebase.database.ServerValue.TIMESTAMP,
-                token: senderToken
-            });
-        }
-        document.getElementById('loading-overlay').style.display = 'none';
-        e.target.value = ''; openPhotoModal(selectedDateKey);
-    }
+const files = Array.from(e.target.files);
+if (files.length > 0 && selectedDateKey && currentUser) {
+document.getElementById('loading-overlay').style.display = 'flex';
+for (let i = 0; i < files.length; i++) {
+document.getElementById('loading-text').innerText = files.length + ' photos, sending ' + (i+1) + '...';
+const base64 = await new Promise(res => {
+const r = new FileReader(); r.onload = (ev) => res(ev.target.result); r.readAsDataURL(files[i]);
+});
+const compressed = await compressImage(base64);
+const messaging = firebase.messaging();
+let senderToken = null;
+try { senderToken = await messaging.getToken({ vapidKey: 'BKIljBShJULc0OZAnzDC1P_9msiBbn4J_FE_KY8wQnP7DkmEWcOK322V9x98p8Xj4qr0CjvOATlyNmI6kpxrfPE' }); } catch(e) {}
+const matches = compressed.match(/^data:([A-Za-z-+/]+);base64,(.+)$/);
+const mimeType = matches[1];
+const buffer = Uint8Array.from(atob(matches[2]), c => c.charCodeAt(0));
+const newPhotoRef = database.ref('photos/' + selectedDateKey).push();
+const photoId = newPhotoRef.key;
+const ext = mimeType.includes('png') ? 'png' : 'jpg';
+const filePath = 'photos/' + selectedDateKey + '/' + photoId + '.' + ext;
+const storageRef = firebase.storage().ref(filePath);
+await storageRef.put(new Blob([buffer], { type: mimeType }));
+const url = await storageRef.getDownloadURL();
+await newPhotoRef.set({
+src: url,
+sender: currentUser.name,
+icon: currentUser.icon,
+timestamp: firebase.database.ServerValue.TIMESTAMP,
+token: senderToken,
+storagePath: filePath
+});
+}
+document.getElementById('loading-overlay').style.display = 'none';
+e.target.value = ''; openPhotoModal(selectedDateKey);
+}
 };
 
 async function compressImage(base64) {
@@ -480,17 +509,19 @@ function formatPostDateTime(timestamp, dateKeyFallback) {
 }
 
 function deletePhoto(dateKey, photoId) {
-    const item = photoData[dateKey] && photoData[dateKey][photoId];
-    if (!item) return;
+const item = photoData[dateKey] && photoData[dateKey][photoId];
+if (!item) return;
+if (!currentUser || !item.sender || currentUser.name !== item.sender) {
+    alert('自分が投稿した写真だけ消せます。');
+    return;
+}
 
-    if (!currentUser || !item.sender || currentUser.name !== item.sender) {
-        alert('自分が投稿した写真だけ消せます。');
-        return;
+if (confirm('消してもいいですか？')) {
+    if (item.storagePath) {
+        firebase.storage().ref(item.storagePath).delete().catch(e => {});
     }
-
-    if (confirm('消してもいいですか？')) {
-        database.ref(`photos/${dateKey}/${photoId}`).remove();
-    }
+    database.ref('photos/' + dateKey + '/' + photoId).remove();
+}
 }
 
 function closeModal(id) { document.getElementById(id).style.display = 'none'; }
