@@ -807,6 +807,7 @@ document.documentElement.setAttribute('data-theme', theme);
 function openThemeModal() {
 const modal = document.getElementById('theme-modal');
 if (modal) modal.style.display = 'block';
+updateThemeButtons();
 }
 const savedTheme = localStorage.getItem('appTheme');
 applyTheme(savedTheme);
@@ -817,13 +818,39 @@ closeSettingsMenu();
 openThemeModal();
 });
 }
+function updateThemeButtons() {
+const currentTheme = localStorage.getItem('appTheme') || 'sakura';
+const themeColors = {
+sakura: '#d87093',
+matcha: '#5a8a5a',
+sky: '#4a7fc1',
+sunset: '#d4733a'
+};
+const themeLabels = {
+sakura: '🌸 桜（さくら）',
+matcha: '🌿 抹茶（まっちゃ）',
+sky: '🌊 空（そら）',
+sunset: '🍊 夕焼け（ゆうやけ）'
+};
+document.querySelectorAll('.theme-btn').forEach(btn => {
+const theme = btn.getAttribute('data-theme');
+if (theme === currentTheme) {
+btn.style.background = themeColors[theme];
+btn.style.color = 'white';
+btn.textContent = '✅ ' + themeLabels[theme];
+} else {
+btn.style.background = '#ccc';
+btn.style.color = 'white';
+btn.textContent = themeLabels[theme];
+}
+});
+}
 document.querySelectorAll('.theme-btn').forEach(btn => {
 btn.addEventListener('click', () => {
 const theme = btn.getAttribute('data-theme');
 localStorage.setItem('appTheme', theme);
 applyTheme(theme);
-closeModal('theme-modal');
-openSettingsMenu();
+updateThemeButtons();
 });
 });
 const themeBackBtn = document.getElementById('theme-back-btn');
