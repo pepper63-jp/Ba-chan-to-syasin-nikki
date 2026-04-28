@@ -363,25 +363,25 @@ async function renderCalendarWithHolidays() {
 }
 
 function updateThumbs(key) {
-    const div = document.getElementById(`thumb-${key}`);
-    if (!div || !photoData[key]) return;
-    const sortedIds = Object.keys(photoData[key]).sort((a, b) => (photoData[key][a].timestamp || 0) - (photoData[key][b].timestamp || 0));
-
-    sortedIds.slice(0, 4).forEach((id, index) => {
-        const wrapper = document.createElement('div');
-        wrapper.className = 'photo-wrapper-mini';
-        const img = document.createElement('img');
-        img.src = photoData[key][id].src;
-        img.className = 'photo-preview';
-        wrapper.appendChild(img);
-        if (index === 3 && sortedIds.length > 4) {
-            const overlay = document.createElement('div');
-            overlay.className = 'more-overlay';
-            overlay.innerText = `+${sortedIds.length - 3}`;
-            wrapper.appendChild(overlay);
-        }
-        div.appendChild(wrapper);
-    });
+const div = document.getElementById('thumb-' + key);
+if (!div || !photoData[key]) return;
+const sortedIds = Object.keys(photoData[key]).sort((a, b) => (photoData[key][a].timestamp || 0) - (photoData[key][b].timestamp || 0));
+sortedIds.slice(0, 4).forEach((id, index) => {
+    const wrapper = document.createElement('div');
+    wrapper.className = 'photo-wrapper-mini';
+    const img = document.createElement('img');
+    img.className = 'photo-preview loading';
+    img.onload = () => img.classList.remove('loading');
+    img.src = photoData[key][id].src;
+    wrapper.appendChild(img);
+    if (index === 3 && sortedIds.length > 4) {
+        const overlay = document.createElement('div');
+        overlay.className = 'more-overlay';
+        overlay.innerText = '+' + (sortedIds.length - 3);
+        wrapper.appendChild(overlay);
+    }
+    div.appendChild(wrapper);
+});
 }
 
 // 5. アップロードとモーダル関連
