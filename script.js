@@ -797,3 +797,39 @@ if (notificationBackBtn) {
 // 初回実行
 renderCalendarWithHolidays();
 updateUserStatus();
+function applyTheme(theme) {
+if (theme === 'sakura' || !theme) {
+document.documentElement.removeAttribute('data-theme');
+} else {
+document.documentElement.setAttribute('data-theme', theme);
+}
+}
+function openThemeModal() {
+const modal = document.getElementById('theme-modal');
+if (modal) modal.style.display = 'block';
+}
+const savedTheme = localStorage.getItem('appTheme');
+applyTheme(savedTheme);
+const settingsOpenTheme = document.getElementById('settings-open-theme');
+if (settingsOpenTheme) {
+settingsOpenTheme.addEventListener('click', () => {
+closeSettingsMenu();
+openThemeModal();
+});
+}
+document.querySelectorAll('.theme-btn').forEach(btn => {
+btn.addEventListener('click', () => {
+const theme = btn.getAttribute('data-theme');
+localStorage.setItem('appTheme', theme);
+applyTheme(theme);
+closeModal('theme-modal');
+openSettingsMenu();
+});
+});
+const themeBackBtn = document.getElementById('theme-back-btn');
+if (themeBackBtn) {
+themeBackBtn.addEventListener('click', () => {
+closeModal('theme-modal');
+openSettingsMenu();
+});
+}
